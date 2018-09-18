@@ -1,4 +1,5 @@
 use std::iter::Iterator;
+use std::collections::HashMap;
 
 /// Split the text in group of ngram characters
 pub struct NGramSpliter<'a>{
@@ -37,4 +38,28 @@ impl<'a> Iterator for NGramSpliter<'a>{
             None
         }
     }
+}
+
+/// Count the ngram occurence in a text
+pub fn ngram_count(text: &[u8], ngram: usize)->HashMap<Vec<u8>, usize>{
+    let spliter = NGramSpliter::new(text, ngram);
+    let mut count = HashMap::new();
+
+    for gram in spliter{
+        *count.entry(gram).or_insert(0) += 1;
+    }
+
+    count
+}
+
+pub fn ngram_freqency(text: &[u8], ngram: usize)->HashMap<Vec<u8>, f64>{
+    let spliter = NGramSpliter::new(text, ngram);
+    let mut freq = HashMap::new();
+    let inc: f64 = 1. / text.len() as f64;
+
+    for gram in spliter{
+        *freq.entry(gram).or_insert(0.) += inc;
+    }
+
+    freq
 }
