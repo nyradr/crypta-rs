@@ -1,0 +1,6 @@
+[package]
+name = "crypta-rs"
+version = "0.1.0"
+authors = ["nyradr <nyradr@protonmail.com>"]
+
+[dependencies]
