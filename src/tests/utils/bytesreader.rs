@@ -1,4 +1,4 @@
-use std::io::{Read, Error};
+use std::io::Read;
 use utils::bytesreader::BytesReader;
 
 #[test]

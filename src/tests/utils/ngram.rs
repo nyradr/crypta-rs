@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::collections::HashMap;
 
 use utils::ngram::*;
 use utils::bytesreader::BytesReader;
@@ -57,72 +57,73 @@ fn test_spliter_3(){
 fn test_spliter_4(){
     let text = [];
     let br = BytesReader::new(&text);
-    let mut i = 0;
-
+    
     let mut spliter = NGramSpliter::new(br, 2);
     assert_eq!(spliter.next(), None);
 }
 
 
-/*
 #[test]
-fn test_spliter_2() {
-    let text = [1, 1, 2, 2, 3, 3, 4, 4];
-    let mut i = 0;
-
-    let spliter = NGramSpliter::new(&text, 2);
-
-    for gram in spliter{
-        let tg = vec![text[i], text[i+1]];
-        assert_eq!(gram, tg);
-        i += 2;
-    }
-}
-*/
-/*
-#[test]
-fn test_ngram_count_1() {
+fn test_ngramcounter_1() {
     let text = [1, 1, 2, 2, 2, 3];
+    let counter = NgramCounter::from_bytes(&text, 1);
+
     let mut count_oracle = HashMap::new();
     count_oracle.insert(vec![1], 2);
     count_oracle.insert(vec![2], 3);
     count_oracle.insert(vec![3], 1);
 
-    let count = ngram_count(&text, 1);
-    assert_eq!(count, count_oracle);
+    assert_eq!(counter.size(), 6);
+    assert_eq!(counter.count(), &count_oracle);    
 }
 
 #[test]
-fn test_ngram_count_2() {
+fn test_ngramcounter_2() {
     let text = [1, 1, 2, 2, 2, 2];
+    let counter = NgramCounter::from_bytes(&text, 2);
+    
     let mut count_oracle = HashMap::new();
     count_oracle.insert(vec![1, 1], 1);
     count_oracle.insert(vec![2, 2], 2);
 
-    let count = ngram_count(&text, 2);
-    assert_eq!(count, count_oracle);
+    assert_eq!(counter.size(), 3);
+    assert_eq!(counter.count(), &count_oracle);
 }
 
 #[test]
-fn test_ngram_freqency_1() {
-    let text = [1, 1, 2, 2, 2, 3];
-    let mut count_oracle = HashMap::new();
-    count_oracle.insert(vec![1], 2. / 6.);
-    count_oracle.insert(vec![2], 3. / 6.);
-    count_oracle.insert(vec![3], 1. / 6.);
+fn test_ngramcounter_3() {
+    let text = [1, 1, 1, 2, 2];
+    let counter = NgramCounter::from_bytes(&text, 3);
 
-    let count = ngram_freqency(&text, 1);
-    assert_eq!(count, count_oracle);
+    let mut count_oracle = HashMap::new();
+    count_oracle.insert(vec![1, 1, 1], 1);
+    count_oracle.insert(vec![2, 2, 0], 1);
+
+    assert_eq!(counter.size(), 2);
+    assert_eq!(counter.count(), &count_oracle);
 }
 
 #[test]
-fn test_ngram_frequency_2() {
-    let text = [1, 1, 2, 2, 2, 2];
-    let mut count_oracle = HashMap::new();
-    count_oracle.insert(vec![1, 1], 1. / 6.);
-    count_oracle.insert(vec![2, 2], 2. / 6.);
+fn test_ngramcounter_4() {
+    let text = [];
+    let counter = NgramCounter::from_bytes(&text, 2);
 
-    let count = ngram_freqency(&text, 2);
-    assert_eq!(count, count_oracle);
+    let count_oracle = HashMap::new();
+    
+    assert_eq!(counter.size(), 0);
+    assert_eq!(counter.count(), &count_oracle);
 }
-*/
+
+#[test]
+fn test_ngramcounter_5() {
+    let text = [1, 1, 1, 2, 2];
+    let mut counter = NgramCounter::from_bytes(&text, 3);
+    counter.append_bytes(&text);
+
+    let mut count_oracle = HashMap::new();
+    count_oracle.insert(vec![1, 1, 1], 2);
+    count_oracle.insert(vec![2, 2, 0], 2);
+
+    assert_eq!(counter.size(), 4);
+    assert_eq!(counter.count(), &count_oracle);
+}
