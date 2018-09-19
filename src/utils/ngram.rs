@@ -41,25 +41,30 @@ impl<'a> Iterator for NGramSpliter<'a>{
 }
 
 /// Count the ngram occurence in a text
-pub fn ngram_count(text: &[u8], ngram: usize)->HashMap<Vec<u8>, usize>{
+pub fn ngram_count(text: &[u8], ngram: usize)->(HashMap<Vec<u8>, usize>, usize){
     let spliter = NGramSpliter::new(text, ngram);
     let mut count = HashMap::new();
+    let mut length = 0;
 
     for gram in spliter{
         *count.entry(gram).or_insert(0) += 1;
+        length += 1;
     }
 
-    count
+    (count, length)
 }
 
-pub fn ngram_freqency(text: &[u8], ngram: usize)->HashMap<Vec<u8>, f64>{
+/// Get the frequency of each ngram in a text
+pub fn ngram_freqency(text: &[u8], ngram: usize)->(HashMap<Vec<u8>, f64>, usize){
     let spliter = NGramSpliter::new(text, ngram);
     let mut freq = HashMap::new();
     let inc: f64 = 1. / text.len() as f64;
+    let mut length = 0;
 
     for gram in spliter{
         *freq.entry(gram).or_insert(0.) += inc;
+        length += 1;
     }
 
-    freq
+    (freq, length)
 }
