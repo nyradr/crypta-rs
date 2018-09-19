@@ -1,5 +1,8 @@
 #[macro_use]
 extern crate clap;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 extern crate crypta_rs;
 
@@ -7,7 +10,30 @@ use std::fs::File;
 use std::io::Read;
 
 use clap::{App, Arg, ArgMatches};
+use crypta_rs::utils::ngram::NgramCounter;
 
+#[derive(Serialize)]
+struct CounterResult{
+    count: Vec<(Vec<u8>, usize, f64)>,
+    size: usize
+}
+
+impl CounterResult{
+    pub fn new(counter: NgramCounter)->Self{
+        let mut count = vec!();
+        let size = counter.size();
+        let fsize = size as f64;
+        
+        for (g, n) in counter.count_owned(){
+            count.push((g, n, n as f64 / fsize));
+        }
+
+        Self{
+            count: count,
+            size: size
+        }
+    }
+}
 
 /// Validate the string as a valid usize number
 fn usize_validator(v: String)->Result<(), String>{
@@ -44,6 +70,17 @@ fn get_text(args: &ArgMatches)->Vec<u8>{
 fn frequency(args: ArgMatches){
     let text = get_text(&args);
     let ngram = value_t!(args, "ngram", usize).unwrap();
+
+    let counter = NgramCounter::from_bytes(&text, ngram);
+    let res = CounterResult::new(counter);
+
+    match args.value_of("export"){
+        Some("json") => {
+            println!("{}", serde_json::to_string_pretty(&res).unwrap());
+        },
+        _ => {}
+    }
+
 }
 
 fn main(){
@@ -70,18 +107,6 @@ fn main(){
             .help("Set the text to analyse as the argument value")
         )
         .arg(
-            Arg::with_name("count")
-            .short("c")
-            .long("count")
-            .help("Count the number of occurence of the each characters")
-        )
-        .arg(
-            Arg::with_name("freq")
-            .short("f")
-            .long("frequency")
-            .help("Get the frequency of each characters")
-        )
-        .arg(
             Arg::with_name("ngram")
             .short("n")
             .long("ngram")
@@ -97,11 +122,6 @@ fn main(){
             .default_value("json")
             .possible_values(&["json"])
             .help("Result export format (json: as a json object)")
-        ).arg(
-            Arg::with_name("length")
-            .short("l")
-            .long("length")
-            .help("Include the total length of the text and the number of ngram referenced.")
         )
         .get_matches();
 
