@@ -52,7 +52,7 @@ fn test_bytesreader3(){
     match br.read(&mut buff){
         Ok(s) => {
             assert_eq!(s, 1);
-            assert_eq!(buff, [5, 0]);
+            assert_eq!(buff, [5, 4]);
         },
         _ => assert!(false)
     };

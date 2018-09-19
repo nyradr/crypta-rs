@@ -3,16 +3,14 @@ use std::io::{Read, Result};
 /// Read a slice of bytes with the Read interface
 pub struct BytesReader<'a>{
     bytes: &'a [u8],
-    index: usize,
-    fill: u8
+    index: usize
 }
 
 impl<'a> BytesReader<'a>{
     pub fn new(bytes: &'a [u8])->Self{
         Self{
             bytes: bytes,
-            index: 0,
-            fill: 0
+            index: 0
         }
     }
 }
@@ -26,14 +24,6 @@ impl<'a> Read for BytesReader<'a>{
             i += 1;
             self.index += 1;
         };
-
-        if i < buf.len() && self.index >= self.bytes.len(){
-            let mut j = i;
-            while j < buf.len(){
-                buf[j] = self.fill;
-                j += 1;
-            };
-        }
 
 
         Ok(i)

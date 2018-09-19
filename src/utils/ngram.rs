@@ -1,70 +1,52 @@
+use std::io::Read;
 use std::iter::Iterator;
-use std::collections::HashMap;
 
 /// Split the text in group of ngram characters
-pub struct NGramSpliter<'a>{
-    text: &'a[u8],
+pub struct NGramSpliter<T: Read>{
+    reader: T,
     ngram: usize,
-    index: usize
+    buf: Vec<u8>,
+    padding: u8
 }
 
-impl<'a> NGramSpliter<'a>{
+impl<T: Read> NGramSpliter<T>{
 
     /// Create a new ngram spliter for the given text
-    pub fn new(text: &'a[u8], ngram: usize)->Self{
+    pub fn new(reader: T, ngram: usize)->Self{
+        Self::with_padding(reader, ngram, 0)
+    }
+
+    /// Create a new ngram spliter for the given text. Set the padding byte used if the text length is not a multiple of ngram
+    pub fn with_padding(reader: T, ngram: usize, padding: u8)->Self{
+        let mut buf = Vec::with_capacity(ngram);
+        for _ in 0..ngram{
+            buf.push(0);
+        }
+
         Self{
-            text: text,
+            reader: reader,
             ngram: ngram,
-            index: 0
+            buf: buf,
+            padding: padding
         }
     }
 }
 
-impl<'a> Iterator for NGramSpliter<'a>{
+impl<T: Read> Iterator for NGramSpliter<T>{
     type Item = Vec<u8>;
 
     fn next(&mut self) -> Option<Self::Item>{
-        if self.index < self.text.len(){
-            let ni = self.index + self.ngram;
-            let sl = &self.text[self.index..ni];
-            let mut elem = vec![];
-            for e in sl{
-                elem.push(e.clone());
-            }
+        match self.reader.read(&mut self.buf){
+            Ok(0) => None,
+            Ok(mut s) => {
+                while s < self.ngram{ // add padding to shorter ngram
+                    self.buf[s] = self.padding;
+                    s += 1;
+                }
 
-            self.index = ni;
-            Some(elem)
-        }else{
-            None
+                Some(self.buf.clone())
+            },
+            _ => None
         }
     }
-}
-
-/// Count the ngram occurence in a text
-pub fn ngram_count(text: &[u8], ngram: usize)->(HashMap<Vec<u8>, usize>, usize){
-    let spliter = NGramSpliter::new(text, ngram);
-    let mut count = HashMap::new();
-    let mut length = 0;
-
-    for gram in spliter{
-        *count.entry(gram).or_insert(0) += 1;
-        length += 1;
-    }
-
-    (count, length)
-}
-
-/// Get the frequency of each ngram in a text
-pub fn ngram_freqency(text: &[u8], ngram: usize)->(HashMap<Vec<u8>, f64>, usize){
-    let spliter = NGramSpliter::new(text, ngram);
-    let mut freq = HashMap::new();
-    let inc: f64 = 1. / text.len() as f64;
-    let mut length = 0;
-
-    for gram in spliter{
-        *freq.entry(gram).or_insert(0.) += inc;
-        length += 1;
-    }
-
-    (freq, length)
 }
