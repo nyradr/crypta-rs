@@ -28,7 +28,7 @@ fn test_spliter_2() {
         i += 2;
     }
 }
-
+/*
 #[test]
 fn test_ngram_count_1() {
     let text = [1, 1, 2, 2, 2, 3];
@@ -74,3 +74,4 @@ fn test_ngram_frequency_2() {
     let count = ngram_freqency(&text, 2);
     assert_eq!(count, count_oracle);
 }
+*/
