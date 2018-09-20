@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::Read;
 
 use clap::{App, Arg, ArgMatches};
-use crypta_rs::utils::ngram::NgramCounter;
+use crypta_rs::utils::ngram::{NgramCounter, cli_validator_ngram};
 
 #[derive(Serialize)]
 struct CounterResult{
@@ -23,7 +23,7 @@ impl CounterResult{
         let mut count = vec!();
         let size = counter.size();
         let fsize = size as f64;
-        
+
         for (g, n) in counter.count_owned(){
             count.push((g, n, n as f64 / fsize));
         }
@@ -32,20 +32,6 @@ impl CounterResult{
             count: count,
             size: size
         }
-    }
-}
-
-/// Validate the string as a valid usize number
-fn usize_validator(v: String)->Result<(), String>{
-    match usize::from_str_radix(&v, 10){
-        Ok(i) => {
-            if i > 0{
-                Ok(())
-            }else{
-                Err("The value must be greater than 0.".to_string())
-            }
-        },
-        Err(s) => Err(s.to_string())
     }
 }
 
@@ -112,7 +98,7 @@ fn main(){
             .long("ngram")
             .takes_value(true)
             .default_value("1")
-            .validator(usize_validator)
+            .validator(cli_validator_ngram)
             .help("Split text in group of ngram characters and calculate the frequency of theses ngrams. ngram must be greater than 0.")
         ).arg(
             Arg::with_name("export")

@@ -57,7 +57,7 @@ fn test_spliter_3(){
 fn test_spliter_4(){
     let text = [];
     let br = BytesReader::new(&text);
-    
+
     let mut spliter = NGramSpliter::new(br, 2);
     assert_eq!(spliter.next(), None);
 }
@@ -74,14 +74,14 @@ fn test_ngramcounter_1() {
     count_oracle.insert(vec![3], 1);
 
     assert_eq!(counter.size(), 6);
-    assert_eq!(counter.count(), &count_oracle);    
+    assert_eq!(counter.count(), &count_oracle);
 }
 
 #[test]
 fn test_ngramcounter_2() {
     let text = [1, 1, 2, 2, 2, 2];
     let counter = NgramCounter::from_bytes(&text, 2);
-    
+
     let mut count_oracle = HashMap::new();
     count_oracle.insert(vec![1, 1], 1);
     count_oracle.insert(vec![2, 2], 2);
@@ -109,7 +109,7 @@ fn test_ngramcounter_4() {
     let counter = NgramCounter::from_bytes(&text, 2);
 
     let count_oracle = HashMap::new();
-    
+
     assert_eq!(counter.size(), 0);
     assert_eq!(counter.count(), &count_oracle);
 }
@@ -126,4 +126,36 @@ fn test_ngramcounter_5() {
 
     assert_eq!(counter.size(), 4);
     assert_eq!(counter.count(), &count_oracle);
+}
+
+#[test]
+fn test_cli_validator_ngram_1() {
+    match cli_validator_ngram("".to_string()) {
+        Err(e) => assert_eq!(&e, "cannot parse integer from empty string"),
+        _ => assert!(false),
+    }
+}
+
+#[test]
+fn test_cli_validator_ngram_2() {
+    match cli_validator_ngram("aa".to_string()) {
+        Err(e) => assert_eq!(&e, "invalid digit found in string"),
+        _ => assert!(false),
+    }
+}
+
+#[test]
+fn test_cli_validator_ngram_3() {
+    match cli_validator_ngram("-42".to_string()) {
+        Err(e) => assert_eq!(e, "invalid digit found in string"),
+        _ => assert!(false),
+    }
+}
+
+#[test]
+fn test_cli_validator_ngram_4() {
+    match cli_validator_ngram("42".to_string()) {
+        Ok(()) => assert!(true),
+        _ => assert!(false),
+    }
 }

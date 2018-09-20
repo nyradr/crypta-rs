@@ -144,3 +144,11 @@ impl NgramCounter{
         freq
     }
 }
+
+/// Clap validator testing if a string can be a valid ngram value.
+pub fn cli_validator_ngram(v: String)->Result<(), String>{
+    match usize::from_str_radix(&v, 10){
+        Ok(_) => Ok(()),
+        Err(s) => Err(s.to_string())
+    }
+}
