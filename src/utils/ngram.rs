@@ -2,6 +2,7 @@ use std::io::Read;
 use std::iter::Iterator;
 use std::collections::HashMap;
 
+
 use utils::bytesreader::BytesReader;
 
 /// Split the text in group of ngram characters
@@ -132,15 +133,179 @@ impl NgramCounter{
         self.size
     }
 
-    /// Get the ngram counter as the frequency of each ngrams
-    pub fn as_frequency(self)->HashMap<Vec<u8>, f64>{
-        let mut freq = HashMap::new();
-        let size = self.size as f64;
+    /// Get a JSON serializable object from a ngram counter
+    pub fn to_json(self)->JsonNgramCounter{
+        JsonNgramCounter::new(self)
+    }
 
-        for (k, v) in self.count{
-            freq.insert(k, v as f64 / size );
+    pub fn to_frequency(self)->NgramFrequency{
+        NgramFrequency::new(self)
+    }
+
+    pub fn to_frequency_json(self)->JsonNgramFrequency{
+        JsonNgramFrequency::new(self.to_frequency())
+    }
+
+    pub fn to_counterfrequency(self)->NgramCounterFrequency{
+        NgramCounterFrequency::new(self)
+    }
+
+    pub fn to_counterfrequency_json(self)->JsonNgramCounterFrequency{
+        JsonNgramCounterFrequency::new(self.to_counterfrequency())
+    }
+
+    pub fn ngram(&self)->usize{
+        self.ngram
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct JsonNgramCounter{
+    ngram: usize,
+    count: Vec<(Vec<u8>, usize)>,
+    size: usize
+}
+
+impl JsonNgramCounter{
+    pub fn new(counter: NgramCounter)->Self{
+        let ngram = counter.ngram();
+        let size = counter.size();
+        let mut count = vec!();
+
+        for (k, v) in counter.count_owned(){
+            count.push((k, v));
         }
 
-        freq
+        Self{
+            ngram: ngram,
+            count: count,
+            size: size
+        }
+    }
+}
+
+
+/// Frequency of each ngrams
+pub struct NgramFrequency{
+    ngram: usize,
+    freq: HashMap<Vec<u8>, f64>
+}
+
+impl NgramFrequency{
+    pub fn new(counter: NgramCounter)->Self{
+        let ngram = counter.ngram();
+        let fsize = counter.size() as f64;
+        let mut freq = HashMap::new();
+
+        for (k, v) in counter.count_owned(){
+            freq.insert(k, v as f64 / fsize);
+        }
+
+        Self{
+            ngram: ngram,
+            freq: freq
+        }
+    }
+
+    pub fn ngram(&self)->usize{
+        self.ngram
+    }
+
+    pub fn freq(&self)->&HashMap<Vec<u8>, f64>{
+        &self.freq
+    }
+
+    pub fn freq_owned(self)->HashMap<Vec<u8>, f64>{
+        self.freq
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct JsonNgramFrequency{
+    ngram: usize,
+    freq: Vec<(Vec<u8>, f64)>
+}
+
+impl JsonNgramFrequency{
+    pub fn new(frequency: NgramFrequency)->Self{
+        let ngram = frequency.ngram();
+        let mut freq = vec!();
+
+        for (k, v) in frequency.freq_owned(){
+            freq.push((k, v));
+        }
+
+        Self{
+            ngram: ngram,
+            freq: freq
+        }
+    }
+}
+
+
+/// Frequency an number of each ngrams
+pub struct NgramCounterFrequency{
+    ngram: usize,
+    count: HashMap<Vec<u8>, (usize, f64)>,
+    size: usize
+}
+
+impl NgramCounterFrequency{
+    pub fn new(counter: NgramCounter)->Self{
+        let ngram = counter.ngram();
+        let mut count = HashMap::new();
+        let fsize = counter.size() as f64;
+        let size = counter.size();
+
+        for (k, v) in counter.count_owned(){
+            count.insert(k, (v, v as f64 / fsize));
+        }
+
+        Self{
+            ngram: ngram,
+            count: count,
+            size: size
+        }
+    }
+
+    pub fn ngram(&self)->usize{
+        self.ngram
+    }
+
+    pub fn count(&self)->&HashMap<Vec<u8>, (usize, f64)>{
+        &self.count
+    }
+
+    pub fn count_owned(self)->HashMap<Vec<u8>, (usize, f64)>{
+        self.count
+    }
+
+    pub fn size(&self)->usize{
+        self.size
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct JsonNgramCounterFrequency{
+    ngram: usize,
+    count: Vec<(Vec<u8>, usize, f64)>,
+    size: usize
+}
+
+impl JsonNgramCounterFrequency{
+    pub fn new(counter: NgramCounterFrequency)->Self{
+        let ngram = counter.ngram();
+        let size = counter.size();
+        let mut count = vec!();
+
+        for (k, v) in counter.count_owned(){
+            count.push((k, v.0, v.1));
+        }
+
+        Self{
+            ngram: ngram,
+            count: count,
+            size: size
+        }
     }
 }

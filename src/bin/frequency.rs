@@ -1,7 +1,5 @@
 #[macro_use]
 extern crate clap;
-#[macro_use]
-extern crate serde_derive;
 extern crate serde_json;
 
 extern crate crypta_rs;
@@ -12,29 +10,6 @@ use std::io::Read;
 use clap::{App, Arg, ArgMatches};
 use crypta_rs::utils::ngram::NgramCounter;
 use crypta_rs::utils::cli::cli_validator_usize;
-
-#[derive(Serialize)]
-struct CounterResult{
-    count: Vec<(Vec<u8>, usize, f64)>,
-    size: usize
-}
-
-impl CounterResult{
-    pub fn new(counter: NgramCounter)->Self{
-        let mut count = vec!();
-        let size = counter.size();
-        let fsize = size as f64;
-
-        for (g, n) in counter.count_owned(){
-            count.push((g, n, n as f64 / fsize));
-        }
-
-        Self{
-            count: count,
-            size: size
-        }
-    }
-}
 
 // Get the input text
 fn get_text(args: &ArgMatches)->Vec<u8>{
@@ -59,7 +34,7 @@ fn frequency(args: ArgMatches){
     let ngram = value_t!(args, "ngram", usize).unwrap();
 
     let counter = NgramCounter::from_bytes(&text, ngram);
-    let res = CounterResult::new(counter);
+    let res = counter.to_counterfrequency_json();
 
     match args.value_of("export"){
         Some("json") => {
