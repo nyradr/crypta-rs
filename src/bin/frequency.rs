@@ -10,7 +10,8 @@ use std::fs::File;
 use std::io::Read;
 
 use clap::{App, Arg, ArgMatches};
-use crypta_rs::utils::ngram::{NgramCounter, cli_validator_ngram};
+use crypta_rs::utils::ngram::NgramCounter;
+use crypta_rs::utils::cli::cli_validator_usize;
 
 #[derive(Serialize)]
 struct CounterResult{
@@ -98,7 +99,7 @@ fn main(){
             .long("ngram")
             .takes_value(true)
             .default_value("1")
-            .validator(cli_validator_ngram)
+            .validator(cli_validator_usize)
             .help("Split text in group of ngram characters and calculate the frequency of theses ngrams. ngram must be greater than 0.")
         ).arg(
             Arg::with_name("export")

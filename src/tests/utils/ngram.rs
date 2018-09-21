@@ -127,35 +127,3 @@ fn test_ngramcounter_5() {
     assert_eq!(counter.size(), 4);
     assert_eq!(counter.count(), &count_oracle);
 }
-
-#[test]
-fn test_cli_validator_ngram_1() {
-    match cli_validator_ngram("".to_string()) {
-        Err(e) => assert_eq!(&e, "cannot parse integer from empty string"),
-        _ => assert!(false),
-    }
-}
-
-#[test]
-fn test_cli_validator_ngram_2() {
-    match cli_validator_ngram("aa".to_string()) {
-        Err(e) => assert_eq!(&e, "invalid digit found in string"),
-        _ => assert!(false),
-    }
-}
-
-#[test]
-fn test_cli_validator_ngram_3() {
-    match cli_validator_ngram("-42".to_string()) {
-        Err(e) => assert_eq!(e, "invalid digit found in string"),
-        _ => assert!(false),
-    }
-}
-
-#[test]
-fn test_cli_validator_ngram_4() {
-    match cli_validator_ngram("42".to_string()) {
-        Ok(()) => assert!(true),
-        _ => assert!(false),
-    }
-}
